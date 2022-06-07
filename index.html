@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dapps</title>
+    <!-- Ether.js -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+    <style>
+        h1 {
+            color: blue;
+        }
+
+        .content {
+            text-align: center;
+            border: 10px solid rgb(149, 149, 252);
+            background-color: rgb(240, 210, 171);
+            margin: 10rem;
+        }
+
+        p {
+            font-weight: bold;
+        }
+
+        .setMood {
+            margin: 15px;
+            border-radius: 10px;
+            background-color: rgb(155, 186, 243);
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .getMood {
+            margin: 15px;
+            border-radius: 5px;
+            width: 10rem;
+            background-color: rgb(155, 243, 155);
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <h1>Hey, Welcome to my Dapp!</h1>
+        <p>You can Get and Set your mood using Smart Contract.</p>
+
+
+
+        <div>
+            <label for="mood">Input:</label>
+            <input id="mood" type="text" placeholder="Enter your mood!" />
+            <button class="setMood" onclick="setMood()">Set mood</button>
+        </div>
+
+        <div>
+            <button class="getMood" onclick="getMood()">Get mood</button>
+        </div>
+
+        <div>
+            <h3 id="myMood"></h3>
+        </div>
+    </div>
+
+    <script>
+        // connect to ethereum
+        window.ethereum.enable();
+
+        // check the provider
+        var provider = new ethers.providers.Web3Provider(
+            web3.currentProvider,
+            "rinkeby"
+        );
+
+        // Contract address
+        var MoodContractAddress = "0xbAe86c242D89Eb57bFfFb17E2896e9dDF9A0c0dC";
+        // contract ABI - Application Binary Interface: It contains the description about the contract functions.
+        var MoodContractABI = [
+            {
+                "inputs": [],
+                "name": "getMood",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "_mood",
+                        "type": "string"
+                    }
+                ],
+                "name": "setMood",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ];
+
+        var MoodContract;
+        var signer;
+
+        // get list of accounts
+        provider.listAccounts().then(function (accounts) {
+            // get the signer of first account
+            signer = provider.getSigner(accounts[0]);
+            // create contract instance
+            MoodContract = new ethers.Contract(
+                MoodContractAddress,
+                MoodContractABI,
+                signer
+            );
+        });
+
+        // call the contract methods
+        async function getMood() {
+            // getMood method from contract
+            getMoodPromise = MoodContract.getMood();
+            var Mood = await getMoodPromise;
+            console.log("get mood: ", Mood);
+
+            document.getElementById("myMood").innerText = Mood;
+        }
+
+        async function setMood() {
+            // get value entered in input field
+            let mood = document.getElementById("mood").value;
+            // setMood method from contract
+            setMoodPromise = MoodContract.setMood(mood);
+            await setMoodPromise;
+        }
+
+    </script>
+
+</body>
+
+</html>
